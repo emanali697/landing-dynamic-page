@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملتقي</title>
+    <title>شركة الملتقي</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -32,6 +32,12 @@
             font-weight: bold;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
+        .navbar-brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
         .btn-primary-green {
             background: linear-gradient(90deg, var(--primary-green), var(--dark-green));
             border: none;
@@ -54,15 +60,6 @@
             background-color: #D97706;
             transform: translateY(-2px);
             color: #1F2937;
-        }
-        .category-btn {
-            transition: all 0.3s ease;
-        }
-        .category-btn.active {
-            background: linear-gradient(90deg, var(--primary-green), var(--dark-green)) !important;
-            color: white !important;
-            border: none;
-            transform: scale(1.05);
         }
         .card-product {
             transition: all 0.3s ease;
@@ -103,16 +100,36 @@
         .dropdown-item:hover {
             background-color: #f0f9ff;
         }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
+    </div>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-3" href="#">
                 <div class="navbar-brand-logo">
-                    <img src="./logo.jpg" width="50" alt="photo">
+                    <img src="./logo.jpg" alt="شركة الملتقي" onerror="this.style.display='none'; this.parentElement.innerHTML='ش';">
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold text-dark">شركة الملتقي</h5>
@@ -205,22 +222,27 @@
                 <div class="col-lg-8">
                     <div class="card shadow-lg border-0 rounded-4">
                         <div class="card-body p-5">
-                            <h3 class="text-center fw-bold mb-4">الاستفسارعن منتج </h3>
+                            <h3 class="text-center fw-bold mb-4">الاستفسار عن منتج</h3>
                             <form id="registrationForm">
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">الاسم *</label>
-                                    <input type="text" class="form-control form-control-lg" required placeholder="أدخل اسمك الكامل">
+                                    <input type="text" id="regName" class="form-control form-control-lg" required placeholder="أدخل اسمك الكامل">
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">رقم الجوال *</label>
-                                    <input type="tel" class="form-control form-control-lg" required placeholder="05xxxxxxxx">
+                                    <input type="tel" id="regPhone" class="form-control form-control-lg" required placeholder="05xxxxxxxx" pattern="^(05|5)[0-9]{8}$">
+                                    <small class="text-muted">مثال: 0555123456</small>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">الاستفسار أو طلب منتج *</label>
-                                    <textarea class="form-control form-control-lg" rows="4" required placeholder="اكتب استفسارك أو المنتج الذي تريد الاستفسار عنه"></textarea>
+                                    <textarea id="regNotes" class="form-control form-control-lg" rows="4" required placeholder="اكتب استفسارك أو المنتج الذي تريد الاستفسار عنه"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary-green btn-lg w-100">
-                                    إرسال الطلب
+                                    <span class="submit-text">إرسال الطلب</span>
+                                    <span class="submit-spinner d-none">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        جاري الإرسال...
+                                    </span>
                                 </button>
                             </form>
                         </div>
@@ -233,7 +255,7 @@
     <!-- Footer -->
     <footer class="bg-dark text-white py-4">
         <div class="container text-center">
-            <p class="mb-0">© <span id="currentYear"></span> شركة الملتقي . جميع الحقوق محفوظة.</p>
+            <p class="mb-0">© <span id="currentYear"></span> شركة الملتقي. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 
@@ -253,14 +275,21 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">رقم الجوال *</label>
-                            <input type="tel" class="form-control" id="giftPhone" required placeholder="05xxxxxxxx">
+                            <input type="tel" class="form-control" id="giftPhone" required placeholder="05xxxxxxxx" pattern="^(05|5)[0-9]{8}$">
+                            <small class="text-muted">مثال: 0555123456</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">الهدية المختارة</label>
                             <input type="text" class="form-control" id="selectedGift" disabled>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary-green flex-fill">تأكيد</button>
+                            <button type="submit" class="btn btn-primary-green flex-fill">
+                                <span class="submit-text">تأكيد</span>
+                                <span class="submit-spinner d-none">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    جاري الإرسال...
+                                </span>
+                            </button>
                             <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">إلغاء</button>
                         </div>
                     </form>
@@ -285,14 +314,21 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">رقم الجوال *</label>
-                            <input type="tel" class="form-control" id="productPhone" required placeholder="05xxxxxxxx">
+                            <input type="tel" class="form-control" id="productPhone" required placeholder="05xxxxxxxx" pattern="^(05|5)[0-9]{8}$">
+                            <small class="text-muted">مثال: 0555123456</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">المنتج المطلوب</label>
                             <input type="text" class="form-control" id="selectedProduct" disabled>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary-green flex-fill">تأكيد الطلب</button>
+                            <button type="submit" class="btn btn-primary-green flex-fill">
+                                <span class="submit-text">تأكيد الطلب</span>
+                                <span class="submit-spinner d-none">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    جاري الإرسال...
+                                </span>
+                            </button>
                             <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">إلغاء</button>
                         </div>
                     </form>
@@ -303,19 +339,67 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ============================================
+        // Utility Functions
+        // ============================================
+        
+        // Generate unique event ID for idempotency
+        function generateEventId() {
+            return 'evt-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Generate or retrieve session ID
+        function getSessionId() {
+            let sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                sessionId = 'sess-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('sessionId', sessionId);
+            }
+            return sessionId;
+        }
+
+        // Extract ref code from URL
+        function getRefFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('ref') || undefined;
+        }
+
+        // Extract UTM parameters from URL
+        function getUtmParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const utm = {};
+            ['source', 'medium', 'campaign', 'term', 'content'].forEach(key => {
+                const value = urlParams.get('utm_' + key);
+                if (value) utm[key] = value;
+            });
+            return Object.keys(utm).length > 0 ? utm : undefined;
+        }
+
+        // Store ref in localStorage if present
+        const refCode = getRefFromUrl();
+        if (refCode) {
+            localStorage.setItem('ref', refCode);
+        }
+
         // Set current year
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
+        // ============================================
         // Share Functions
+        // ============================================
+        
         function shareToFacebook() {
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
         }
+
         function shareToTwitter() {
             window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=تعرف على منتجاتنا المميزة!`, '_blank');
         }
+
         function shareToWhatsApp() {
             window.open(`https://wa.me/?text=تعرف على منتجاتنا المميزة! ${encodeURIComponent(window.location.href)}`, '_blank');
         }
+
         function copyLink() {
             navigator.clipboard.writeText(window.location.href);
             const copyText = document.getElementById('copyText');
@@ -325,7 +409,11 @@
             }, 2000);
         }
 
-        // Main API logic
+        // ============================================
+        // API Functions
+        // ============================================
+        
+        // Fetch landing content (products & gifts)
         async function getLandingContent(ref) {
             let url = "https://getlandingcontent-inau7ud24q-ew.a.run.app";
             if (ref) url += "?ref=" + encodeURIComponent(ref);
@@ -337,42 +425,71 @@
             return data;
         }
 
+        // Submit gift lead
+        async function submitGiftLead(payload) {
+            const response = await fetch('https://submitgiftlead-inau7ud24q-ew.a.run.app', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            return await response.json();
+        }
+
+        // Submit inquiry (product or general)
+        async function submitInquiry(payload) {
+            const response = await fetch('https://submitinquiry-inau7ud24q-ew.a.run.app', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            return await response.json();
+        }
+
+        // ============================================
+        // Render Functions
+        // ============================================
+        
         // Render products
         function renderProducts(products) {
             const container = document.getElementById("productsContainer");
             container.innerHTML = "";
+            
             if (!products || !products.length) {
-                container.innerHTML = '<div class="alert alert-warning text-center">لا توجد منتجات متاحة حالياً.</div>';
+                container.innerHTML = '<div class="col-12"><div class="alert alert-warning text-center">لا توجد منتجات متاحة حالياً.</div></div>';
                 return;
             }
+            
             products.forEach(prod => {
-                container.innerHTML += `
-                    <div class="col-md-6 col-lg-4 product-item">
-                        <div class="card card-product shadow-sm h-100">
-                            <div class="product-image">
-                                ${prod.heroImage
-                                    ? `<img src="${prod.heroImage}" alt="${prod.name}" style="width:100%;height:200px;object-fit:cover;border-radius:1rem 1rem 0 0;">`
-                                    : "🛒"
-                                }
+                const productCard = document.createElement('div');
+                productCard.className = 'col-md-6 col-lg-4 product-item';
+                productCard.innerHTML = `
+                    <div class="card card-product shadow-sm h-100">
+                        <div class="product-image">
+                            ${prod.heroImage
+                                ? `<img src="${prod.heroImage}" alt="${prod.name}" style="width:100%;height:200px;object-fit:cover;">`
+                                : "🛒"
+                            }
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">${prod.name}</h5>
+                            <p class="card-text text-muted">${prod.shortDescription || ""}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="text-success mb-0 fw-bold">${prod.customerPrice} ريال</h4>
+                                <button class="btn btn-accent rounded-pill px-4" onclick="orderProduct('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', '${prod.customerPrice}')">
+                                    طلب المنتج
+                                </button>
                             </div>
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">${prod.name}</h5>
-                                <p class="card-text text-muted">${prod.shortDescription || ""}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h4 class="text-success mb-0 fw-bold">${prod.customerPrice} ريال</h4>
-                                    <button class="btn btn-accent rounded-pill px-4" onclick="orderProduct('${prod.name}', '${prod.customerPrice} ريال')">طلب المنتج</button>
-                                </div>
-                                ${prod.promoVideoUrl ? `
-                                  <div class="mt-3 text-center">
+                            ${prod.promoVideoUrl ? `
+                                <div class="mt-3 text-center">
                                     <a href="${prod.promoVideoUrl}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill">
-                                      <i class="bi bi-play-circle me-1"></i> مشاهدة فيديو المنتج
+                                        <i class="bi bi-play-circle me-1"></i> مشاهدة فيديو المنتج
                                     </a>
-                                  </div>
-                                ` : ""}
-                            </div>
+                                </div>
+                            ` : ""}
                         </div>
                     </div>
                 `;
+                container.appendChild(productCard);
             });
         }
 
@@ -380,100 +497,275 @@
         function renderGifts(gifts) {
             const container = document.getElementById("giftsContainer");
             container.innerHTML = "";
+            
             if (!gifts || !gifts.length) {
-                container.innerHTML = '<div class="alert alert-warning text-center">لا توجد هدايا متاحة حالياً.</div>';
+                container.innerHTML = '<div class="col-12"><div class="alert alert-warning text-center">لا توجد هدايا متاحة حالياً.</div></div>';
                 return;
             }
+            
             gifts.forEach(gift => {
-                container.innerHTML += `
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card card-gift text-center p-4">
-                            <h5 class="fw-bold">${gift.giftName}</h5>
-                            <p class="text-muted">${gift.shortDescription || ""}</p>
-                            <button class="btn btn-primary-green rounded-pill w-100 mt-auto" onclick="selectGift('${gift.giftName}')">
-                                اختيار الهدية
-                            </button>
-                        </div>
+                const giftCard = document.createElement('div');
+                giftCard.className = 'col-md-6 col-lg-3';
+                giftCard.innerHTML = `
+                    <div class="card card-gift text-center p-4">
+                        ${gift.heroImage ? `
+                            <img src="${gift.heroImage}" alt="${gift.giftName}" class="mb-3" style="width:100px;height:100px;object-fit:contain;margin:0 auto;">
+                        ` : `<div class="mb-3" style="font-size: 4rem;">🎁</div>`}
+                        <h5 class="fw-bold">${gift.giftName}</h5>
+                        <p class="text-muted">${gift.shortDescription || ""}</p>
+                        <button class="btn btn-primary-green rounded-pill w-100 mt-auto" onclick="selectGift('${gift.id}', '${gift.giftName.replace(/'/g, "\\'")}')">
+                            اختيار الهدية
+                        </button>
                     </div>
                 `;
+                container.appendChild(giftCard);
             });
         }
 
-        // Select Gift
+        // ============================================
+        // Gift Selection & Submission
+        // ============================================
+        
         let giftChosen = false;
-        function selectGift(giftName) {
+        let selectedGiftId = null;
+
+        function selectGift(giftId, giftName) {
             if (giftChosen) {
                 alert('لقد اخترت هديتك بالفعل!');
                 return;
             }
+            selectedGiftId = giftId;
             document.getElementById('selectedGift').value = giftName;
             const modal = new bootstrap.Modal(document.getElementById('giftModal'));
             modal.show();
         }
 
         // Gift Form Submit
-        document.getElementById('giftForm').addEventListener('submit', function(e) {
+        document.getElementById('giftForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            giftChosen = true;
-            // Disable all gift buttons
-            const giftCards = document.querySelectorAll('.card-gift');
-            const giftButtons = document.querySelectorAll('.card-gift button');
-            giftCards.forEach(card => card.classList.add('disabled'));
-            giftButtons.forEach(btn => {
-                btn.disabled = true;
-                btn.classList.remove('btn-primary-green');
-                btn.classList.add('btn-secondary');
-                btn.textContent = 'لقد اخترت هديتك';
-            });
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('giftModal'));
-            modal.hide();
-            alert('تم تسجيل طلب الهدية بنجاح! شكراً لاختيارك');
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const submitSpinner = submitBtn.querySelector('.submit-spinner');
+            
+            // Show loading
+            submitText.classList.add('d-none');
+            submitSpinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
+            const name = document.getElementById('giftName').value;
+            const phone = document.getElementById('giftPhone').value;
+            
+            try {
+                const payload = {
+                    ref: localStorage.getItem('ref') || undefined,
+                    giftId: selectedGiftId,
+                    name: name,
+                    phone: phone,
+                    sessionId: getSessionId(),
+                    utm: getUtmParams(),
+                    eventId: generateEventId()
+                };
+                
+                const result = await submitGiftLead(payload);
+                
+                if (result.ok) {
+                    giftChosen = true;
+                    
+                    // Disable all gift buttons
+                    const giftCards = document.querySelectorAll('.card-gift');
+                    const giftButtons = document.querySelectorAll('.card-gift button');
+                    giftCards.forEach(card => card.classList.add('disabled'));
+                    giftButtons.forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.remove('btn-primary-green');
+                        btn.classList.add('btn-secondary');
+                        btn.textContent = 'لقد اخترت هديتك';
+                    });
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('giftModal'));
+                    modal.hide();
+                    
+                    // Show appropriate message
+                    if (result.locked) {
+                        alert('تم تسجيل طلبك! لكن هذا الرقم مسجل مسبقاً خلال الـ 30 يوم الماضية.');
+                    } else if (result.duplicate) {
+                        alert('تم تسجيل هذا الطلب مسبقاً. شكراً لك!');
+                    } else {
+                        alert('تم تسجيل طلب الهدية بنجاح! شكراً لاختيارك');
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                } else {
+                    alert('حدث خطأ: ' + (result.error || 'يرجى المحاولة لاحقاً'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.');
+            } finally {
+                // Hide loading
+                submitText.classList.remove('d-none');
+                submitSpinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
         });
 
-        // Registration Form Submit
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('تم إرسال طلبك بنجاح! سنتواصل معك قريباً');
-            this.reset();
-        });
+        // ============================================
+        // Product Order
+        // ============================================
+        
+        let selectedProductId = null;
 
-        // Order Product Function
-        function orderProduct(productName, productPrice) {
-            document.getElementById('selectedProduct').value = `${productName} - ${productPrice}`;
+        function orderProduct(productId, productName, productPrice) {
+            selectedProductId = productId;
+            document.getElementById('selectedProduct').value = `${productName} - ${productPrice} ريال`;
             const modal = new bootstrap.Modal(document.getElementById('productModal'));
             modal.show();
         }
 
         // Product Form Submit
-        document.getElementById('productForm').addEventListener('submit', function(e) {
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const submitSpinner = submitBtn.querySelector('.submit-spinner');
+            
+            // Show loading
+            submitText.classList.add('d-none');
+            submitSpinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
             const name = document.getElementById('productName').value;
             const phone = document.getElementById('productPhone').value;
-            const product = document.getElementById('selectedProduct').value;
-            const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
-            modal.hide();
-            alert(`تم تسجيل طلبك بنجاح!\n\nالاسم: ${name}\nالجوال: ${phone}\nالمنتج: ${product}\n\nسنتواصل معك قريباً`);
-            this.reset();
+            
+            try {
+                const payload = {
+                    ref: localStorage.getItem('ref') || undefined,
+                    productId: selectedProductId,
+                    name: name,
+                    phone: phone,
+                    notes: 'طلب منتج من صفحة الهبوط',
+                    sessionId: getSessionId(),
+                    utm: getUtmParams(),
+                    eventId: generateEventId()
+                };
+                
+                const result = await submitInquiry(payload);
+                
+                if (result.ok) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+                    modal.hide();
+                    
+                    alert(`تم تسجيل طلبك بنجاح!\n\nالاسم: ${name}\nالجوال: ${phone}\n\nسنتواصل معك قريباً`);
+                    
+                    // Reset form
+                    this.reset();
+                } else {
+                    alert('حدث خطأ: ' + (result.error || 'يرجى المحاولة لاحقاً'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.');
+            } finally {
+                // Hide loading
+                submitText.classList.remove('d-none');
+                submitSpinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
         });
 
-        // Initial Load: Fetch products & gifts
+        // ============================================
+        // Registration Form (General Inquiry)
+        // ============================================
+        
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const submitSpinner = submitBtn.querySelector('.submit-spinner');
+            
+            // Show loading
+            submitText.classList.add('d-none');
+            submitSpinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+            
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const notes = document.getElementById('regNotes').value;
+            
+            try {
+                const payload = {
+                    ref: localStorage.getItem('ref') || undefined,
+                    productId: 'general-inquiry',
+                    name: name,
+                    phone: phone,
+                    notes: notes,
+                    sessionId: getSessionId(),
+                    utm: getUtmParams(),
+                    eventId: generateEventId()
+                };
+                
+                const result = await submitInquiry(payload);
+                
+                if (result.ok) {
+                    alert('تم إرسال طلبك بنجاح! سنتواصل معك قريباً');
+                    this.reset();
+                } else {
+                    alert('حدث خطأ: ' + (result.error || 'يرجى المحاولة لاحقاً'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.');
+            } finally {
+                // Hide loading
+                submitText.classList.remove('d-none');
+                submitSpinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // ============================================
+        // Initial Load
+        // ============================================
+        
         window.onload = async function() {
             try {
-                const urlRef = new URLSearchParams(window.location.search).get("ref") || undefined;
+                const urlRef = getRefFromUrl();
                 const data = await getLandingContent(urlRef);
+                
+                // Render products and gifts
                 renderProducts(data.products);
                 renderGifts(data.gifts);
-                // Store collaborator ref for future forms (if needed)
-                if (data.collaborator?.ref) localStorage.setItem("ref", data.collaborator.ref);
+                
+                // Store collaborator ref if available
+                if (data.collaborator?.ref) {
+                    localStorage.setItem("ref", data.collaborator.ref);
+                }
+                
+                console.log('Landing page loaded successfully');
             } catch (e) {
+                console.error('Error loading content:', e);
+                
                 document.getElementById("productsContainer").innerHTML = `
-                  <div class="alert alert-danger text-center">تعذر تحميل المنتجات، يرجى المحاولة لاحقاً.</div>
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center">
+                            تعذر تحميل المنتجات، يرجى المحاولة لاحقاً.
+                        </div>
+                    </div>
                 `;
+                
                 document.getElementById("giftsContainer").innerHTML = `
-                  <div class="alert alert-danger text-center">تعذر تحميل الهدايا، يرجى المحاولة لاحقاً.</div>
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center">
+                            تعذر تحميل الهدايا، يرجى المحاولة لاحقاً.
+                        </div>
+                    </div>
                 `;
-                console.error(e);
             }
         };
     </script>
